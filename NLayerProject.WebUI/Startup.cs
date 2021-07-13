@@ -1,17 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NLayerProject.Core.Repositories;
-using NLayerProject.Core.Services;
-using NLayerProject.Core.UnitOfWorks;
-using NLayerProject.Data;
-using NLayerProject.Data.Repositories;
-using NLayerProject.Data.UnitOfWorks;
-using NLayerProject.Service.Services;
+using NLayerProject.WebUI.ApiService;
 using NLayerProject.WebUI.Filters;
 using System;
 using System.Collections.Generic;
@@ -32,24 +25,14 @@ namespace NLayerProject.WebUI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpClient<CategoryApiService>(opt =>
+            {
+                opt.BaseAddress = new Uri(Configuration["baseUrl"]);
+            });
+
             services.AddScoped<CategoryNotFoundFilter>();
 
             services.AddAutoMapper(typeof(Startup));
-
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped(typeof(IService<>), typeof(Service.Services.Service<>));
-            services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<IProductService, ProductService>();
-
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(Configuration["ConnectionStrings:SqlConStr"].ToString(), o =>
-                {
-                    o.MigrationsAssembly("NLayerProject.Data");
-                });
-            });
 
             services.AddControllersWithViews();
         }
